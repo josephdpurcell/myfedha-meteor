@@ -67,6 +67,12 @@ if (Meteor.isClient) {
     endDateTime: function(){
       return Session.get('endDateTime');
     },
+    dateRange: function(){
+      var start = moment(Session.get('startDateTime'));
+      var end = moment(Session.get('endDateTime'));
+      var dateRange = start.format('MMM D, YYYY') + ' to ' + end.format('MMM D, YYYY');
+      return dateRange;
+    },
     transactions: function() {
       var start = Session.get('startDateTime');
       var end = Session.get('endDateTime');
