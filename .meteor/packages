@@ -9,3 +9,5 @@ autopublish
 insecure
 momentjs:moment
 appcache
+accounts-ui
+accounts-password
