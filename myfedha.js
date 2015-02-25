@@ -16,7 +16,7 @@ if (Meteor.isClient) {
 
       var amount = event.target.amount.value;
       var description = event.target.description.value;
-      var date = event.target.date.value;
+      var date = moment(event.target.date.value).toISOString();
 
       Transactions.insert({
         amount: amount,
@@ -77,7 +77,7 @@ if (Meteor.isClient) {
     transactions: function() {
       var start = Session.get('startDateTime');
       var end = Session.get('endDateTime');
-      return Transactions.find({date: {"$gt":start, "$lt":end}}, {sort: {createdAt: -1}});
+      return Transactions.find({date: {"$gt":start, "$lt":end}}, {sort: {date: 1}});
     }
   });
 
