@@ -22,7 +22,8 @@ if (Meteor.isClient) {
         amount: amount,
         description: description,
         date: date,
-        createdAt: new Date()
+        createdAt: new Date(),
+        userId: Meteor.userId()
       });
 
       // Clear form
@@ -78,6 +79,34 @@ if (Meteor.isClient) {
       var end = Session.get('endDateTime');
       return Transactions.find({date: {"$gt":start, "$lt":end}}, {sort: {createdAt: -1}});
     }
+  });
+
+  Template.transaction.helpers({
+    getUsername: function(userId) {
+      var user = Meteor.users.findOne({_id: userId});
+      if (user) {
+        if (user.username) {
+          return user.username;
+        } else {
+          var emails = user.emails;
+          var email = '';
+          for (var i in emails) {
+            email = emails[i].address;
+            break;
+          }
+          return email;
+        }
+      } else {
+        return '';
+      }
+    },
+    dateFormat: function(date) {
+      return moment(date).format('MMM D, YYYY');
+    }
+  });
+
+  Accounts.ui.config({
+    passwordSignupFields: 'USERNAME_AND_EMAIL'
   });
 }
 

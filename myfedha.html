@@ -10,6 +10,9 @@
       <h1>MyFedha</h1>
     </header>
 
+    {{> loginButtons}}
+
+    {{#if currentUser}}
     <form class="new-transaction">
       <fieldset>
         <legend>Add Transaction</legend>
@@ -30,7 +33,8 @@
         </div>
       </fieldset>
     </form>
-    
+    {{/if}}
+
     <h1>Transactions</h1>
 
     <table class="table table-striped table-hover">
@@ -39,6 +43,7 @@
           <th>Amount</th>
           <th>Description</th>
           <th>Date</th>
+          <th>Username</th>
           <th>&nbsp;</th>
         </tr>
       </thead>
@@ -70,7 +75,10 @@
       {{description}}
     </td>
     <td>
-      {{date}}
+      {{dateFormat date}}
+    </td>
+    <td>
+      {{getUsername userId}}
     </td>
     <td>
       <button class="delete">&times;</button>
