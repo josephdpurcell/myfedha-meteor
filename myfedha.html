@@ -1,0 +1,47 @@
+<head>
+  <title>myfedha</title>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>Transactions List</h1>
+
+      <form class="paginator">
+        <p>Start</p>
+        <input type="text" name="start" value="{{startDateTime}}" />
+        <p>End</p>
+        <input type="text" name="end" value="{{endDateTime}}" />
+        <button class="prev">Prev</button>
+        <button class="next">Next</button>
+      </form>
+
+      <form class="new-transaction">
+        <p>Amount <input type="text" name="amount" /></p>
+        <p>Description <input type="text" name="description" /></p>
+        <p>Date <input type="text" name="date" /></p>
+        <p>
+          <input type="submit">
+        </p>
+      </form>
+    </header>
+
+    <ul>
+      {{#each transactions}}
+        {{> transaction}}
+      {{/each}}
+    </ul>
+
+  </div>
+
+</body>
+
+<template name="transaction">
+  <li>
+    {{amount}} - {{description}} - {{date}}
+    <button class="edit">edit</button>
+    <button class="delete">&times;</button>
+  </li>
+</template>
