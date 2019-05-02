@@ -1,6 +1,21 @@
-Transactions = new Mongo.Collection("transactions");
+App = {}
+App.Transactions = new Mongo.Collection("transactions");
+App.Accounts = new Mongo.Collection("accounts");
+App.refreshCurrentDateTime = function(){
+  Session.set('currentDateTime', moment().format('YYYY-MM-DD HH:mm:ss'));
+};
+App.getCurrentDateTime = function(){
+  App.refreshCurrentDateTime();
+  return Session.get('currentDateTime');
+};
+
+Accounts.config({
+  forbidClientAccountCreation: true
+});
 
 if (Meteor.isClient) {
+
+  App.refreshCurrentDateTime();
 
   if (! Session.get('startDateTime')) {
     Session.set('startDateTime', moment().format());
@@ -15,27 +30,61 @@ if (Meteor.isClient) {
       // This function is called when the new task form is submitted
 
       var amount = event.target.amount.value;
+      var type = event.target.type.value;
       var description = event.target.description.value;
       var date = moment(event.target.date.value).toISOString();
+      var accountId = event.target.accountId.value;
+      var accountMongoId = new Mongo.ObjectID(accountId);
 
-      Transactions.insert({
+      var account = App.Accounts.findOne(accountMongoId);
+      if (!account) {
+        alert('Could not find account.');
+        return false;
+      }
+
+      App.Transactions.insert({
         amount: amount,
+        type: type,
         description: description,
         date: date,
         createdAt: new Date(),
+        accountId: accountMongoId,
         userId: Meteor.userId()
       });
 
+      var multiplier = (type == 'expense') ? -1 : 1;
+      App.Accounts.update(accountMongoId, {
+        $inc: {
+          amount: amount * multiplier
+        }
+      });
+
       // Clear form
-      event.target.amount.value = "";
-      event.target.description.value = "";
-      event.target.date.value = "";
+      event.target.amount.value = '';
+      event.target.description.value = '';
+      event.target.date.value = App.getCurrentDateTime();
 
       // Prevent default form submit
       return false;
     },
     "click .delete": function () {
-      Transactions.remove(this._id);
+      var amount = parseInt(this.amount);
+      var accountMongoId = new Mongo.ObjectID(this.accountId.toHexString());
+
+      var account = App.Accounts.findOne(accountMongoId);
+      if (!account) {
+        alert('Could not find account.');
+        return false;
+      }
+
+      var multiplier = (this.type == 'expense') ? 1 : -1;
+      App.Accounts.update(accountMongoId, {
+        $inc: {
+          amount: amount * multiplier
+        }
+      });
+
+      App.Transactions.remove(this._id);
     },
     "click .prev": function (event) {
       event.preventDefault();
@@ -58,10 +107,16 @@ if (Meteor.isClient) {
     },
     "change .end-date input": function (event) {
       Session.set("endDateTime", event.target.end);
+    },
+    "click .form-refresh-date": function (event) {
+      App.refreshCurrentDateTime();
     }
   });
 
   Template.body.helpers({
+    date: function(){
+      return Session.get('currentDateTime');
+    },
     startDateTime: function(){
       return Session.get('startDateTime');
     },
@@ -77,7 +132,17 @@ if (Meteor.isClient) {
     transactions: function() {
       var start = Session.get('startDateTime');
       var end = Session.get('endDateTime');
-      return Transactions.find({date: {"$gt":start, "$lt":end}}, {sort: {date: 1}});
+      //return App.Transactions.find({date: {"$gt":start, "$lt":end}}, {sort: {date: 1}});
+      return App.Transactions.find({}, {sort: {date: 1}});
+    },
+    accounts: function() {
+      return App.Accounts.find({userId:Meteor.userId()}, {sort: {name: 1}});
+    }
+  });
+
+  Template.accountSelect.helpers({
+    toHexString: function(id) {
+      return id.toHexString();
     }
   });
 
